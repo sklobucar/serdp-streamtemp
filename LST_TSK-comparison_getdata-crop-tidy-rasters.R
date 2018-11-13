@@ -657,9 +657,9 @@ full_df <-select(full_df, ymd, yr, monthday, doy, cell, lon, lat, lst_mod, lst_m
 
   
 #####SAVE dataframes
-setwd('C:/Users/slklobucar/Documents/PostDoc_UAF/BorealFishFire/LST/serdp-streamtemp/')
+#setwd('C:/Users/slklobucar/Documents/PostDoc_UAF/BorealFishFire/LST/serdp-streamtemp/')
 
-save(full_df, file = 'full_df.Rdata')
-fwrite(full_df, file = 'full_df.csv')
+#save(full_df, file = 'full_df.Rdata')
+#fwrite(full_df, file = 'full_df.csv')
 
 
