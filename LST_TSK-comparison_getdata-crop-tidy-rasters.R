@@ -114,8 +114,6 @@ plot(lst300b)
   crop_tsk_gfdl_hist_myd <- crop(tsk_gfdl_hist_myd, new_extent)
   
 #####Get data and tidy
-#########################IRONICALLY THIS CODE IS NOT TIDY AND SHOULD BE CLEANED....  
-  
   
 ###############################################################
 ####LST_MOD####################################################
@@ -610,6 +608,58 @@ full_df <- full_join(modis_df, wrf_df, by = c('yr', 'doy', 'cell'))
 ####Check column classes and such....
 sapply(full_df, class)
 
-full_df$yr <- as.numeric(full_df$yr) #maybe character?
+full_df$yr <- as.numeric(full_df$yr) 
 full_df$doy <- as.character(full_df$doy)
 full_df$doy <- as.numeric(full_df$doy)
+
+####Create new column for date (month and day first) from doy...not sure what, if anything, to do with leap years yet
+
+#full_df$date <- if(full_df$year = 2000 | 2004 | 2008 | 2012 | 2016) {
+#    as.Date(full_df$doy, format = c('%Y-%m-%d'), origin = '1999-12-31')
+#} else 
+#    {(as.Date(full_df$doy, format = c('%Y-%m-%d'), origin = '2000-12-31'))}
+  
+full_df$date <- as.Date(full_df$doy, format = c('%Y-%m-%d'), origin = '1999-12-31')
+
+#Drop year from date
+full_df$monthday <- format(full_df$date, format = '%m-%d')
+
+#Combine with year column to get "true" date (see above re: leap years)
+full_df <- full_df %>% 
+  select(-date) %>% 
+  unite(ymd, yr, monthday, sep = '-', remove = F) %>% 
+  select(ymd, yr, monthday, doy, cell, lst_mod, lst_myd, tsk_ccsm_hist_mod, tsk_ccsm_hist_myd,
+         tsk_ccsm_rcp_mod, tsk_ccsm_hist_myd, tsk_era_mod, tsk_era_myd, tsk_gfdl_hist_mod, tsk_gfdl_hist_myd,
+         tsk_gfdl_rcp_mod, tsk_gfdl_rcp_myd)
+
+####Get lat long centers for each grid cell
+crop_coords = as.data.frame(xyFromCell(crop_lst_mod, cell = 1:144))
+
+#Test
+plot(lst300b)
+plot(basin.out, add = T) 
+points(crop_coords) ###Looks good
+
+#Create vector of cell numbers and join with full_df
+prefix <- 'V'
+n <- 144
+suffix <- seq(1:n)
+
+crop_coords$cell <- paste(prefix, suffix, sep = '')
+
+colnames(crop_coords) <- c('lon', 'lat', 'cell')  
+
+full_df <- left_join(full_df, crop_coords, by = 'cell')
+ 
+full_df <-select(full_df, ymd, yr, monthday, doy, cell, lon, lat, lst_mod, lst_myd, tsk_ccsm_hist_mod, tsk_ccsm_hist_myd,
+       tsk_ccsm_rcp_mod, tsk_ccsm_hist_myd, tsk_era_mod, tsk_era_myd, tsk_gfdl_hist_mod, tsk_gfdl_hist_myd,
+       tsk_gfdl_rcp_mod, tsk_gfdl_rcp_myd)
+
+  
+#####SAVE dataframes
+setwd('C:/Users/slklobucar/Documents/PostDoc_UAF/BorealFishFire/LST/serdp-streamtemp/')
+
+save(full_df, file = 'full_df.Rdata')
+fwrite(full_df, file = 'full_df.csv')
+
+
