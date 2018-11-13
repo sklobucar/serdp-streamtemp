@@ -570,7 +570,7 @@ new_tsk_gfdl_hist_myd_df <- new_tsk_gfdl_hist_myd_df %>%
 ####################################################################
 
 #############combine to master data set!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-modis_lst_mod <- select(new_lst_df, -name)
+modis_lst_mod <- select(new_lst_mod_df, -name)
 modis_lst_myd <- select(new_lst_myd_df, -name)
 
 wrf1 <- select(new_tsk_ccsm_hist_mod_df, -name)
@@ -603,8 +603,13 @@ wrf_df <- full_join(wrf1, wrf2, by = c('yr', 'doy', 'cell')) %>%
 full_df <- full_join(modis_df, wrf_df, by = c('yr', 'doy', 'cell'))
 
 #####SAVE dataframes
-save(full_df, file = 'full_df.Rdata')
-fwrite(full_df, file = 'full_df.csv')
+#save(full_df, file = 'full_df.Rdata')
+#fwrite(full_df, file = 'full_df.csv')
 
 
 ####Check column classes and such....
+sapply(full_df, class)
+
+full_df$yr <- as.numeric(full_df$yr) #maybe character?
+full_df$doy <- as.character(full_df$doy)
+full_df$doy <- as.numeric(full_df$doy)
