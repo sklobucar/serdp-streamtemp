@@ -600,10 +600,6 @@ wrf_df <- full_join(wrf1, wrf2, by = c('yr', 'doy', 'cell')) %>%
 
 full_df <- full_join(modis_df, wrf_df, by = c('yr', 'doy', 'cell'))
 
-#####SAVE dataframes
-#save(full_df, file = 'full_df.Rdata')
-#fwrite(full_df, file = 'full_df.csv')
-
 
 ####Check column classes and such....
 sapply(full_df, class)
@@ -629,7 +625,7 @@ full_df <- full_df %>%
   select(-date) %>% 
   unite(ymd, yr, monthday, sep = '-', remove = F) %>% 
   select(ymd, yr, monthday, doy, cell, lst_mod, lst_myd, tsk_ccsm_hist_mod, tsk_ccsm_hist_myd,
-         tsk_ccsm_rcp_mod, tsk_ccsm_hist_myd, tsk_era_mod, tsk_era_myd, tsk_gfdl_hist_mod, tsk_gfdl_hist_myd,
+         tsk_ccsm_rcp_mod, tsk_ccsm_rcp_myd, tsk_era_mod, tsk_era_myd, tsk_gfdl_hist_mod, tsk_gfdl_hist_myd,
          tsk_gfdl_rcp_mod, tsk_gfdl_rcp_myd)
 
 ####Get lat long centers for each grid cell
@@ -652,12 +648,47 @@ colnames(crop_coords) <- c('lon', 'lat', 'cell')
 full_df <- left_join(full_df, crop_coords, by = 'cell')
  
 full_df <-select(full_df, ymd, yr, monthday, doy, cell, lon, lat, lst_mod, lst_myd, tsk_ccsm_hist_mod, tsk_ccsm_hist_myd,
-       tsk_ccsm_rcp_mod, tsk_ccsm_hist_myd, tsk_era_mod, tsk_era_myd, tsk_gfdl_hist_mod, tsk_gfdl_hist_myd,
+       tsk_ccsm_rcp_mod, tsk_ccsm_rcp_myd, tsk_era_mod, tsk_era_myd, tsk_gfdl_hist_mod, tsk_gfdl_hist_myd,
        tsk_gfdl_rcp_mod, tsk_gfdl_rcp_myd)
 
+####Get elevations
+setwd('C:/Users/slklobucar/Documents/PostDoc_UAF/BorealFishFire/LST/')
+
+
+load('study-area_elevation-20km.Rda')
+
+##Join full_df and elevation
+
+data <- left_join(full_df, elevation.20km, by = 'cell')
+
+data <-select(data, ymd, yr, monthday, doy, cell, lon, lat, elevation, lst_mod, lst_myd, tsk_ccsm_hist_mod, tsk_ccsm_hist_myd,
+              tsk_ccsm_rcp_mod, tsk_ccsm_rcp_myd, tsk_era_mod, tsk_era_myd, tsk_gfdl_hist_mod, tsk_gfdl_hist_myd,
+              tsk_gfdl_rcp_mod, tsk_gfdl_rcp_myd)
+
+##Convert temps to celsius
+
+temps <-  data %>% 
+  select(9:20) %>% 
+  mutate(lst_modC = lst_mod - 273.15) %>% 
+  mutate(lst_mydC = lst_myd - 273.15) %>% 
+  mutate(ccsm_hist_modC = tsk_ccsm_hist_mod - 273.15) %>% 
+  mutate(ccsm_hist_mydC = tsk_ccsm_hist_myd - 273.15) %>% 
+  mutate(ccsm_rcp_modC = tsk_ccsm_rcp_mod - 273.15) %>% 
+  mutate(ccsm_rcp_mydC = tsk_ccsm_rcp_myd - 273.15) %>% 
+  mutate(era_modC = tsk_era_mod - 273.15) %>% 
+  mutate(era_mydC = tsk_era_myd - 273.15) %>% 
+  mutate(gfdl_hist_modC = tsk_gfdl_hist_mod - 273.15) %>% 
+  mutate(gfdl_hist_mydC = tsk_gfdl_hist_myd - 273.15) %>% 
+  mutate(gfdl_rcp_modC = tsk_gfdl_rcp_mod - 273.15) %>% 
+  mutate(gfdl_rcp_mydC = tsk_gfdl_rcp_myd - 273.15)
   
-#####SAVE dataframes
-#setwd('C:/Users/slklobucar/Documents/PostDoc_UAF/BorealFishFire/LST/serdp-streamtemp/')
+tempsC <- select(temps, 13:24)
+info <- select(data, 1:8)
+
+full_df <- cbind(info, tempsC)
+
+#####uncomment to SAVE full_df
+#setwd('C:/Users/slklobucar/Documents/PostDoc_UAF/BorealFishFire/LST/')
 
 #save(full_df, file = 'full_df.Rdata')
 #fwrite(full_df, file = 'full_df.csv')
