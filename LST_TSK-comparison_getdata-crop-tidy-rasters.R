@@ -687,6 +687,42 @@ info <- select(data, 1:8)
 
 full_df <- cbind(info, tempsC)
 
+####Commbine hist + rcp for ccsm and gfdl
+ccsm.rcp <- full_df %>% 
+  select(ymd, cell, ccsm_rcp_modC) %>% 
+  group_by(cell, ymd) %>% 
+  na.omit()
+
+ccsm.hist <- full_df %>% 
+  select(ymd, cell, ccsm_hist_modC) %>% 
+  group_by(cell, ymd) %>% 
+  na.omit
+
+colnames(ccsm.rcp) = c('ymd', 'cell', 'ccsm_modC')
+colnames(ccsm.hist) = c('ymd', 'cell', 'ccsm_modC')
+
+ccsm <- rbind(ccsm.hist, ccsm.rcp)
+
+full_df$ccsm_modC <- ccsm$ccsm_modC
+
+##
+gfdl.rcp <- full_df %>% 
+  select(ymd, cell, gfdl_rcp_modC) %>% 
+  group_by(cell, ymd) %>% 
+  na.omit()
+
+gfdl.hist <- full_df %>% 
+  select(ymd, cell, gfdl_hist_modC) %>% 
+  group_by(cell, ymd) %>% 
+  na.omit()
+
+colnames(gfdl.rcp) = c('ymd', 'cell', 'gfdl_modC')
+colnames(gfdl.hist) = c('ymd', 'cell', 'gfdl_modC')
+
+gfdl <- rbind(gfdl.hist, gfdl.rcp)
+
+full_df$gfdl_modC <- gfdl$gfdl_modC
+
 #####uncomment to SAVE full_df
 #setwd('C:/Users/slklobucar/Documents/PostDoc_UAF/BorealFishFire/LST/')
 
