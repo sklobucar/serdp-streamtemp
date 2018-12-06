@@ -586,7 +586,7 @@ wrf8 <- select(new_tsk_gfdl_hist_myd_df, -name)
 wrf9 <- select(new_tsk_gfdl_rcp_mod_df, -name)
 wrf10 <- select(new_tsk_gfdl_rcp_myd_df, -name)
 
-modis_df <- full_join(modis_lst_mod, modis_lst_myd, by = c('yr', 'doy', 'cell'))
+modis_df <- full_join(modis_lst_mod, modis_lst_myd, by = c('yr' = 'yr', 'doy' = 'doy', 'cell' = 'cell'))
 
 wrf_df <- full_join(wrf1, wrf2, by = c('yr', 'doy', 'cell')) %>%
   full_join(., wrf3, by = c('yr', 'doy', 'cell')) %>%
@@ -687,41 +687,50 @@ info <- select(data, 1:8)
 
 full_df <- cbind(info, tempsC)
 
-####Commbine hist + rcp for ccsm and gfdl
-ccsm.rcp <- full_df %>% 
-  select(ymd, cell, ccsm_rcp_modC) %>% 
-  group_by(cell, ymd) %>% 
-  na.omit()
+####Commbine hist + rcp for ccsm and gfdl...something seems fishy here....(adding observations?)
+
+names(full_df)
+
+#[1] "ymd"            "yr"             "monthday"       "doy"            "cell"           "lon"            "lat"            "elevation"     
+#[9] "lst_modC"       "lst_mydC"       "ccsm_hist_modC" "ccsm_hist_mydC" "ccsm_rcp_modC"  "ccsm_rcp_mydC"  "era_modC"       "era_mydC"      
+#[17] "gfdl_hist_modC" "gfdl_hist_mydC" "gfdl_rcp_modC"  "gfdl_rcp_mydC" 
 
 ccsm.hist <- full_df %>% 
-  select(ymd, cell, ccsm_hist_modC) %>% 
-  group_by(cell, ymd) %>% 
-  na.omit
+  select(yr, doy, cell, ccsm_hist_modC) %>% 
+  filter(yr < 2006)
 
-colnames(ccsm.rcp) = c('ymd', 'cell', 'ccsm_modC')
-colnames(ccsm.hist) = c('ymd', 'cell', 'ccsm_modC')
+ccsm.rcp <- full_df %>% 
+  select(yr, doy, cell, ccsm_rcp_modC) %>% 
+  filter(yr > 2005)
+
+colnames(ccsm.hist) = c('yr', 'doy', 'cell', 'ccsm_modC')
+colnames(ccsm.rcp) = c('yr', 'doy', 'cell', 'ccsm_modC')
 
 ccsm <- rbind(ccsm.hist, ccsm.rcp)
 
-full_df$ccsm_modC <- ccsm$ccsm_modC
-
-##
-gfdl.rcp <- full_df %>% 
-  select(ymd, cell, gfdl_rcp_modC) %>% 
-  group_by(cell, ymd) %>% 
-  na.omit()
-
 gfdl.hist <- full_df %>% 
-  select(ymd, cell, gfdl_hist_modC) %>% 
-  group_by(cell, ymd) %>% 
-  na.omit()
+  select(yr, doy, cell, gfdl_hist_modC) %>% 
+  filter(yr < 2006 | yr == 2006 & doy == 1)
 
-colnames(gfdl.rcp) = c('ymd', 'cell', 'gfdl_modC')
-colnames(gfdl.hist) = c('ymd', 'cell', 'gfdl_modC')
+
+gfdl.rcp <- full_df %>% 
+  select(yr, doy, cell, gfdl_rcp_modC) %>% 
+  filter(yr > 2006 | yr == 2006 & doy != 1)
+  
+colnames(gfdl.hist) = c('yr', 'doy', 'cell', 'gfdl_modC')
+colnames(gfdl.rcp) = c('yr', 'doy', 'cell', 'gfdl_modC')
 
 gfdl <- rbind(gfdl.hist, gfdl.rcp)
 
-full_df$gfdl_modC <- gfdl$gfdl_modC
+new.df <- left_join(full_df, ccsm, by = c('yr' = 'yr', 'doy' = 'doy', 'cell' = 'cell'))
+new.df2 <- left_join(new.df, gfdl, by = c('yr' = 'yr', 'doy' = 'doy', 'cell' = 'cell'))
+
+full_df <- new.df2
+
+########################################################################################
+########################################################################################
+#I AM NOT SURE WHY NEW ROWS (IN MULIPLES OF 144) ARE BEING ADDED WITH LEFT JOINS...I CANNOT FIND THE DUPLICATES?
+##This also happens above in Line589...I donthing there should be more than 122544 observations as per the original number of obs of lst mod
 
 #####uncomment to SAVE full_df
 #setwd('C:/Users/slklobucar/Documents/PostDoc_UAF/BorealFishFire/LST/')
