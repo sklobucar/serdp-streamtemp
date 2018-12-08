@@ -71,20 +71,101 @@ sites2 <-  select(sites, Site, Site.Index, Site.Name)
 
 loggers <- cbind(sites2, logs.coords)
 
+colnames(loggers) = c('site', 'site.index', 'site.name', 'lon', 'lat')
+
 ####Bring in temp data
 temps <- read.csv('all_temp.csv')
 
+#Wide to tall
+temps_df <- temps %>% 
+  gather(site, stream.temp, -Date, -Year, -Julian)
 
+colnames(temps_df) = c('ymd', 'yr', 'doy', 'site', 'stream.temp')
 
+###get commonalities between loggers and temps_df to merge 
+loggers$site.index[is.na(loggers$site.index)] <- as.character(loggers$site[is.na(loggers$site.index)])
 
+temps_df$site <- gsub('X', '', temps_df$site)
 
+unique(temps_df$site)
+unique(loggers$site.index)
 
+dups <-  as.data.frame(duplicated(loggers$site.index))
+##there are dups of monument creek and jenny m creek...they are close enough spatially 
+##can't figure out how to distinguish temp data to specific logger..just keep the first lcoation for each dup.
+loggers <- cbind(loggers, dups)
 
+loggers <- loggers %>% 
+  filter(`duplicated(loggers$site.index)` == 'FALSE')
 
+loggers <- select(loggers, -site, -`duplicated(loggers$site.index)`)
 
-b <- t(temps)
+unique(temps_df$site)
+#[1] "1100"    "1101"    "1102"    "1103"    "1104"    "1105"    "1107"    "1110"    "1113"    "1116"    "1117"    "1118"   
+#[13] "1119"    "1120"    "1121"    "1122"    "1123"    "1124"    "1125"    "1126"    "1130"    "1136"    "1137"    "1139"   
+#[25] "1140"    "1141"    "1142"    "1143"    "1144"    "1145"    "1146"    "1147"    "1148"    "1150"    "1157"    "1158"   
+#[37] "C1.SIDE" "C2.SIDE" "C3.MS"   "C3.SIDE" "C4.MS"   "C4.SIDE" "C5.MS"   "C5.SIDE" "P2.SIDE" "P3.SIDE" "P4.SIDE" "P5.MS"  
+#[49] "rkm11"   "rkm66"   "rkm76"   "rkm82"   "rkm86"   "rkm88"   "rkm90"   "rkm90V2" "rkm92"   "rkm104"  "rkm114"  "rkm128" 
+#[61] "rkm140"  "rkm152"  "rkm164"  "rkm166"  "rkm167"  "rkm168"  "rkm170"  "rkm174"  "rkm180"  "rkm190"  "rkm233"
 
-temp_df <- as.data.frame(b)
+unique(loggers$site.index)
+#[1] "1143"           "1124"           "1105"           "1125"           "1116"           "1102"           "1142"          
+#[8] "1141"           "1122"           "1118"           "1145"           "1120"           "1119"           "1107"          
+#[15] "1101"           "1123"           "1110"           "1100"           "1121"           "1117"           "1113"          
+#[22] "1104"           "1130"           "1139"           "1146"           "1136"           "1150"           "1157"          
+#[29] "1144"           "1137"           "1159"           "1148"           "1126"           "1147"           "1140"          
+#[36] "11rkm"          "66rkm"          "76rkm"          "82rkm"          "86rkm"          "88rkm"          "90rkm"         
+#[43] "90rkmV2"        "92rkm"          "104rkm"         "114rkm"         "128rkm"         "140rkm"         "152rkm"        
+#[50] "164rkm"         "166rkm"         "167rkm"         "168rkm"         "170rkm"         "174rkm"         "180rkm"        
+#[57] "190rkm"         "233rkm"         "C1-SIDE"        "C2-SIDE"        "C3-MS"          "C3-SIDE"        "C4-MS"         
+#[64] "C4-SIDE"        "C5-MS"          "C5-SIDE"        "P2-SIDE"        "P3-SIDE"        "P4-SIDE"        "P5-MS"         
+#[71] "TwoRiversGauge"
 
-setDT(temp_df, keep.rownames = T)
+##Clean up site.index to match temps_df$site
+loggers$site.index[loggers$site.index =='11rkm'] = 'rkm11'
+loggers$site.index[loggers$site.index =='66rkm'] = 'rkm66'
+loggers$site.index[loggers$site.index =='76rkm'] = 'rkm76'
+loggers$site.index[loggers$site.index =='82rkm'] = 'rkm82'
+loggers$site.index[loggers$site.index =='86rkm'] = 'rkm86'
+loggers$site.index[loggers$site.index =='88rkm'] = 'rkm88'
+loggers$site.index[loggers$site.index =='90rkm'] = 'rkm90'
+loggers$site.index[loggers$site.index =='90rkmv2'] = 'rkm90v2'
+loggers$site.index[loggers$site.index =='92rkm'] = 'rkm92'
+loggers$site.index[loggers$site.index =='104rkm'] = 'rkm104'
+loggers$site.index[loggers$site.index =='114rkm'] = 'rkm114'
+loggers$site.index[loggers$site.index =='128rkm'] = 'rkm128'
+loggers$site.index[loggers$site.index =='140rkm'] = 'rkm140'
+loggers$site.index[loggers$site.index =='152rkm'] = 'rkm152'
+loggers$site.index[loggers$site.index =='164rkm'] = 'rkm164'
+loggers$site.index[loggers$site.index =='166rkm'] = 'rkm166'
+loggers$site.index[loggers$site.index =='167rkm'] = 'rkm167'
+loggers$site.index[loggers$site.index =='168rkm'] = 'rkm168'
+loggers$site.index[loggers$site.index =='170rkm'] = 'rkm170'
+loggers$site.index[loggers$site.index =='174rkm'] = 'rkm174'
+loggers$site.index[loggers$site.index =='180rkm'] = 'rkm180'
+loggers$site.index[loggers$site.index =='190rkm'] = 'rkm190'
+loggers$site.index[loggers$site.index =='233rkm'] = 'rkm233'
+loggers$site.index[loggers$site.index =='C1-SIDE'] = 'C1.SIDE'
+loggers$site.index[loggers$site.index =='C2-SIDE'] = 'C2.SIDE'
+loggers$site.index[loggers$site.index =='C3-SIDE'] = 'C3.SIDE'
+loggers$site.index[loggers$site.index =='C4-SIDE'] = 'C4.SIDE'
+loggers$site.index[loggers$site.index =='C5-SIDE'] = 'C5.SIDE'
+loggers$site.index[loggers$site.index =='C3-MS'] = 'C3.MS'
+loggers$site.index[loggers$site.index =='C5-MS'] = 'C5.MS'
+loggers$site.index[loggers$site.index =='P2-SIDE'] = 'P2.SIDE'
+loggers$site.index[loggers$site.index =='P3-SIDE'] = 'P3.SIDE'
+loggers$site.index[loggers$site.index =='P4-SIDE'] = 'P4.SIDE'
+loggers$site.index[loggers$site.index =='P5-MS'] = 'P5.MS'
+  ##As per all-looger-chena.xls (huntsman)
+loggers$site.index[loggers$site.index =='1159'] = '1158'
 
+###join
+temps_df2 <- left_join(temps_df, loggers, by = c('site' = 'site.index'))
+
+####Clean it up mo'
+temps_df3 <- select(temps_df2, -yr, -doy)
+              
+temps_df3 <-   temps_df3 %>% 
+  separate(ymd, c('month', 'day', 'year')) #####and so on and so forth to match full_df.
+###Create raster?, assign cell to sites, 8 day averages to match full_df (or just compare)?
+         
