@@ -166,6 +166,28 @@ temps_df2 <- left_join(temps_df, loggers, by = c('site' = 'site.index'))
 temps_df3 <- select(temps_df2, -yr, -doy)
               
 temps_df3 <-   temps_df3 %>% 
-  separate(ymd, c('month', 'day', 'year')) #####and so on and so forth to match full_df.
+  separate(ymd, c('month', 'day', 'year')) 
+
+temps_df4 <- temps_df3 %>% 
+  unite(date, year, month, day, sep = '-', remove = F) %>% 
+  unite(monthday, month, day, sep = '-', remove = F)
+
+temps_df4$date <- as.Date(temps_df4$date)
+temps_df4$monthday <- as.Date(temps_df4$monthday, "%m-%d") ###year added in...fix if needed, monthday is borrowed from previous script
+
+#get DOY
+tmp <- as.POSIXlt(temps_df4$date)
+
+doy <- as.data.frame(tmp)
+doy$doy <- tmp$yday
+#check with doy in full_df...leap year? day off...POSIXlt is 0:365
+doy$doy <- tmp$yday + 1
+##day off after Feb28...for now
+doy$doy2 <- ifelse(doy$doy>59, doy$doy +1, doy$doy)
+
+#add to temp df
+temps_df4$doy <- doy$doy2
+
+#####and so on and so forth to match full_df.
 ###Create raster?, assign cell to sites, 8 day averages to match full_df (or just compare)?
          
