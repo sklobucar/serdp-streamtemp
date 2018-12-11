@@ -237,7 +237,9 @@ doy$doy2 <- ifelse(doy$doy>59, doy$doy +1, doy$doy)
 #add to temp df
 temps_df4$doy <- doy$doy2
 
+#Clean and save data
+chena.temps <- select(temps_df4, date, month, day, year, doy, site.name, site, cell, lon, lat, stream.temp)
 
-#####and so on and so forth to match full_df.
-###Create raster?, assign cell to sites, 8 day averages to match full_df (or just compare)?
+#setwd('C:/Users/slklobucar/Documents/PostDoc_UAF/BorealFishFire/LST/')
+#save(chena.temps, file = 'chena-temps_20km.Rdata')
          
