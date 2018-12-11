@@ -188,6 +188,51 @@ doy$doy2 <- ifelse(doy$doy>59, doy$doy +1, doy$doy)
 #add to temp df
 temps_df4$doy <- doy$doy2
 
+#######################################################
+#####Get grid cells for each point
+###https://gis.stackexchange.com/questions/88830/overlay-a-spatial-polygon-with-a-grid-and-check-in-which-grid-element-specific-c
+
+bb <- bbox(gridpolygon)
+
+cs <- c(20000, 20000)
+
+cc <- bb[,1] + (cs/2)
+cd <- ceiling(diff(t(bb))/cs)
+
+grd <- GridTopology(cellcentre.offset = cc, cellsize = cs, cells.dim = cd)
+grd
+
+sp_grd <- SpatialGridDataFrame(grd, data = data.frame(id=1:prod(cd)),
+                               proj4string = CRS(proj4string(logs.loc)))
+summary(sp_grd)
+
+
+colnames(logs.coords) <- c('x', 'y')
+
+coordinates(logs.coords) <- ~ x + y
+proj4string(logs.coords) <- proj4string(logs.loc)
+
+over(logs.coords, sp_grd)
+
+library('lattice')
+
+spplot(sp_grd, "id",
+       panel = function(...) {
+         panel.gridplot(..., border="black")
+         sp.polygons(logs.loc)
+         sp.polygons(basin.out)
+         sp.points(logs.coords, cex=1.5)
+         panel.text(...)
+       })
+
+plot(gridpolygon)
+plot(basin.out, add = T)
+plot(logs.loc, add = T)
+#plot(chena, add = T)
+
+#Looks good, now assign cells to df's
+
+
 #####and so on and so forth to match full_df.
 ###Create raster?, assign cell to sites, 8 day averages to match full_df (or just compare)?
          
