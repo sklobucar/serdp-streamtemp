@@ -32,13 +32,14 @@ basin.out <- readOGR(dsn = '.', layer = "basin_chnHUC12")
 setwd('F:/NetMap/FishFire_NetMap/chn/')
 chena <- readOGR(dsn = '.', layer = 'Chena_HUC12')
 
-plot(basin.out)
-plot(logs.loc, add = T)
 
 crs(basin.out)
 
 ##Transform loggers locations to basin.out CRS
 logs.loc <- spTransform(logs, CRS('+proj=aea +lat_1=55 +lat_2=65 +lat_0=50 +lon_0=-154 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0'))
+
+plot(basin.out)
+plot(logs.loc, add = T)
 
 ##Plot on grid
 new_extent <- extent(c(200653.8, 519875.3, 1592108, 1763107))
@@ -63,15 +64,63 @@ logs.site <- as.data.frame(logs.loc$Site_Index)
 
 logs.xy  <- cbind(logs.site, logs.coords)
 
+#######################################################
+#####Get grid cells for each point
+###https://gis.stackexchange.com/questions/88830/overlay-a-spatial-polygon-with-a-grid-and-check-in-which-grid-element-specific-c
+
+bb <- bbox(gridpolygon)
+
+cs <- c(20000, 20000)
+
+cc <- bb[,1] + (cs/2)
+cd <- ceiling(diff(t(bb))/cs)
+
+grd <- GridTopology(cellcentre.offset = cc, cellsize = cs, cells.dim = cd)
+grd
+
+sp_grd <- SpatialGridDataFrame(grd, data = data.frame(id=1:prod(cd)),
+                               proj4string = CRS(proj4string(logs.loc)))
+summary(sp_grd)
+
+
+colnames(logs.coords) <- c('x', 'y')
+
+coordinates(logs.coords) <- ~ x + y
+proj4string(logs.coords) <- proj4string(logs.loc)
+
+grid_num <- over(logs.coords, sp_grd)
+
+library('lattice')
+
+spplot(sp_grd, "id",
+       panel = function(...) {
+         panel.gridplot(..., border="black")
+         sp.polygons(logs.loc)
+         sp.polygons(basin.out)
+         sp.points(logs.coords, cex=1.5)
+         panel.text(...)
+       })
+
+plot(gridpolygon)
+plot(basin.out, add = T)
+plot(logs.loc, add = T)
+#plot(chena, add = T)
+
+#Looks good, now assign cells to sites
 ###
 setwd('C:/Users/slklobucar/Documents/PostDoc_UAF/BorealFishFire/LST/huntsman-chena/')
 sites <- read.csv(file = 'logger_location.csv')
 
-sites2 <-  select(sites, Site, Site.Index, Site.Name)
+sites$cell <- grid_num$id
+
+sites2 <-  select(sites, Site, Site.Index, Site.Name, cell)
+
+#bring this back after redoing above
+logs.coords <- as.data.frame(coordinates(logs.loc))
 
 loggers <- cbind(sites2, logs.coords)
 
-colnames(loggers) = c('site', 'site.index', 'site.name', 'lon', 'lat')
+colnames(loggers) = c('site', 'site.index', 'site.name', 'cell','lon', 'lat')
 
 ####Bring in temp data
 temps <- read.csv('all_temp.csv')
@@ -187,50 +236,6 @@ doy$doy2 <- ifelse(doy$doy>59, doy$doy +1, doy$doy)
 
 #add to temp df
 temps_df4$doy <- doy$doy2
-
-#######################################################
-#####Get grid cells for each point
-###https://gis.stackexchange.com/questions/88830/overlay-a-spatial-polygon-with-a-grid-and-check-in-which-grid-element-specific-c
-
-bb <- bbox(gridpolygon)
-
-cs <- c(20000, 20000)
-
-cc <- bb[,1] + (cs/2)
-cd <- ceiling(diff(t(bb))/cs)
-
-grd <- GridTopology(cellcentre.offset = cc, cellsize = cs, cells.dim = cd)
-grd
-
-sp_grd <- SpatialGridDataFrame(grd, data = data.frame(id=1:prod(cd)),
-                               proj4string = CRS(proj4string(logs.loc)))
-summary(sp_grd)
-
-
-colnames(logs.coords) <- c('x', 'y')
-
-coordinates(logs.coords) <- ~ x + y
-proj4string(logs.coords) <- proj4string(logs.loc)
-
-over(logs.coords, sp_grd)
-
-library('lattice')
-
-spplot(sp_grd, "id",
-       panel = function(...) {
-         panel.gridplot(..., border="black")
-         sp.polygons(logs.loc)
-         sp.polygons(basin.out)
-         sp.points(logs.coords, cex=1.5)
-         panel.text(...)
-       })
-
-plot(gridpolygon)
-plot(basin.out, add = T)
-plot(logs.loc, add = T)
-#plot(chena, add = T)
-
-#Looks good, now assign cells to df's
 
 
 #####and so on and so forth to match full_df.
