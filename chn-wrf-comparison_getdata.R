@@ -137,6 +137,8 @@ loggers$site.index[is.na(loggers$site.index)] <- as.character(loggers$site[is.na
 temps_df$site <- gsub('X', '', temps_df$site)
 
 unique(temps_df$site)
+temps_df$site[temps_df$site =='1103'] = '1102'
+
 unique(loggers$site.index)
 
 dups <-  as.data.frame(duplicated(loggers$site.index))
@@ -178,7 +180,7 @@ loggers$site.index[loggers$site.index =='82rkm'] = 'rkm82'
 loggers$site.index[loggers$site.index =='86rkm'] = 'rkm86'
 loggers$site.index[loggers$site.index =='88rkm'] = 'rkm88'
 loggers$site.index[loggers$site.index =='90rkm'] = 'rkm90'
-loggers$site.index[loggers$site.index =='90rkmv2'] = 'rkm90v2'
+loggers$site.index[loggers$site.index =='90rkmV2'] = 'rkm90V2'
 loggers$site.index[loggers$site.index =='92rkm'] = 'rkm92'
 loggers$site.index[loggers$site.index =='104rkm'] = 'rkm104'
 loggers$site.index[loggers$site.index =='114rkm'] = 'rkm114'
@@ -200,6 +202,7 @@ loggers$site.index[loggers$site.index =='C3-SIDE'] = 'C3.SIDE'
 loggers$site.index[loggers$site.index =='C4-SIDE'] = 'C4.SIDE'
 loggers$site.index[loggers$site.index =='C5-SIDE'] = 'C5.SIDE'
 loggers$site.index[loggers$site.index =='C3-MS'] = 'C3.MS'
+loggers$site.index[loggers$site.index =='C4-MS'] = 'C4.MS'
 loggers$site.index[loggers$site.index =='C5-MS'] = 'C5.MS'
 loggers$site.index[loggers$site.index =='P2-SIDE'] = 'P2.SIDE'
 loggers$site.index[loggers$site.index =='P3-SIDE'] = 'P3.SIDE'
@@ -207,6 +210,7 @@ loggers$site.index[loggers$site.index =='P4-SIDE'] = 'P4.SIDE'
 loggers$site.index[loggers$site.index =='P5-MS'] = 'P5.MS'
   ##As per all-looger-chena.xls (huntsman)
 loggers$site.index[loggers$site.index =='1159'] = '1158'
+#loggers$site.index[loggers$site.index =='1103'] = '1102'
 
 ###join
 temps_df2 <- left_join(temps_df, loggers, by = c('site' = 'site.index'))
@@ -240,6 +244,6 @@ temps_df4$doy <- doy$doy2
 #Clean and save data
 chena.temps <- select(temps_df4, date, month, day, year, doy, site.name, site, cell, lon, lat, stream.temp)
 
-#setwd('C:/Users/slklobucar/Documents/PostDoc_UAF/BorealFishFire/LST/')
-#save(chena.temps, file = 'chena-temps_20km.Rdata')
+setwd('C:/Users/slklobucar/Documents/PostDoc_UAF/BorealFishFire/LST/')
+save(chena.temps, file = 'chena-temps_20km.Rdata')
          
