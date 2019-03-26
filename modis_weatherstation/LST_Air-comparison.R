@@ -499,3 +499,12 @@ legend('topleft',
        bty = 'n')
 text(x = 25, y = 0, 'Snotel' ~R^2 ~ '= 0.94', col = 'forestgreen')
 text(x = 25, y = -9, 'ACIS' ~R^2 ~ '= 0.96', col = 'darkseagreen3') 
+
+#################################
+##save pertinent dataframes for other applications
+
+save(acis, file = 'acis.Rda')
+save(acis.season, file = 'acis.season.Rda')
+save(snotel, file = 'snotel.Rda')
+save(snotel, file = 'snotel.season.Rda')
+####
