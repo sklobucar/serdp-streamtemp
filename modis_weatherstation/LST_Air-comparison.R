@@ -506,5 +506,5 @@ text(x = 25, y = -9, 'ACIS' ~R^2 ~ '= 0.96', col = 'darkseagreen3')
 save(acis, file = 'acis.Rda')
 save(acis.season, file = 'acis.season.Rda')
 save(snotel, file = 'snotel.Rda')
-save(snotel, file = 'snotel.season.Rda')
+save(snotel.season, file = 'snotel.season.Rda')
 ####
