@@ -508,3 +508,80 @@ save(acis.season, file = 'acis.season.Rda')
 save(snotel, file = 'snotel.Rda')
 save(snotel.season, file = 'snotel.season.Rda')
 ####
+
+
+
+##MODIS vs SKIN
+par(mfrow =c(3, 1), mar = c(4, 4, 1, 1), oma = c(1, 1, 2, 0))
+#Min
+plot(MOD11A2 ~ tsk.min, data = snotel.season, pch = 16, col = alpha('dodgerblue4', 0.7),
+     xlim = c(-40, 40), ylim = c(-40, 40),
+     xlab = expression(paste("Minimum Skin Temperature [",degree,"C]")), 
+     ylab = expression(paste("MODIS LST [",degree,"C]")))
+min1 <- lm(MOD11A2 ~ tsk.min, data = snotel.season) 
+summary(min1) #R2 = 0.87
+
+points(MOD11A2 ~ tsk.min, data = acis.season, pch = 17, col = alpha('darkslategray2', 0.7)) 
+min2 <- lm(MOD11A2 ~ tsk.min, data = acis.season)
+summary(min2) #R2 = 0.88
+
+abline(min1, lwd = 2, col = 'dodgerblue4')
+abline(min2, lwd = 2, col = 'darkslategray2', lty = 2)
+abline(0, 1, col = 'gray24', lty = 3, lwd = 2)
+
+legend('topleft', 
+       legend = c('Snotel', 'ACIS'),
+       col = c('dodgerblue4', 'darkslategray2'),
+       pch = c(16, 17),
+       bty = 'n')
+text(x = 25, y = 0, 'Snotel' ~R^2 ~ '= 0.87', col = 'dodgerblue4')
+text(x = 25, y = -9, 'ACIS' ~R^2 ~ '= 0.88', col = 'darkturquoise')
+mtext(side = 3, line = 1, font = 2, 'Observed Seasonal Skin Temp vs. MODIS LST')
+
+#Max
+plot(MOD11A2 ~ tsk.max, data = snotel.season, pch = 16, col = alpha('firebrick3', 0.5),
+     xlim = c(-40, 40), ylim = c(-40, 40),
+     xlab = expression(paste("Maximum Skin Temperature [",degree,"C]")), 
+     ylab = expression(paste("MODIS LST [",degree,"C]")))
+max1 <- lm(MOD11A2 ~ tsk.max, data = snotel.season) 
+summary(max1) #R2 = 0.94
+
+points(MOD11A2 ~ tsk.max, data = acis.season, pch = 17, col = alpha('deeppink2', 0.5)) 
+max2 <- lm(MOD11A2 ~ tsk.max, data = acis.season)
+summary(max2) #R2 = 0.93
+
+abline(max1, lwd = 2, col = 'firebrick3')
+abline(max2, lwd = 2, col = 'deeppink2', lty = 2)
+abline(0, 1, col = 'gray24', lty = 3, lwd = 2)
+
+legend('topleft', 
+       legend = c('Snotel', 'ACIS'),
+       col = c('firebrick3', 'deeppink2'),
+       pch = c(16, 17),
+       bty = 'n')
+text(x = 25, y = 0, 'Snotel' ~R^2 ~ '= 0.94', col = 'firebrick3')
+text(x = 25, y = -9, 'ACIS' ~R^2 ~ '= 0.93', col = 'deeppink2') 
+
+#Mean
+plot(MOD11A2 ~ tsk.mean, data = snotel.season, pch = 16, col = alpha('forestgreen', 0.5),
+     xlim = c(-40, 40), ylim = c(-40, 40),
+     xlab = expression(paste("Mean Skin Temperature [",degree,"C]")), 
+     ylab = expression(paste("MODIS LST [",degree,"C]")))
+mean1 <- lm(MOD11A2 ~ tsk.mean, data = snotel.season) 
+summary(mean1) #R2 = 0.94
+
+points(MOD11A2 ~ tsk.mean, data = acis.season, pch = 17, col = alpha('darkseagreen3', 0.5)) 
+mean2 <- lm(MOD11A2 ~ tsk.mean, data = acis.season)
+summary(mean2) #R2 = 0.93
+
+abline(mean1, lwd = 2, col = 'forestgreen')
+abline(mean2, lwd = 2, col = 'darkseagreen3', lty = 2)
+abline(0, 1, col = 'gray24', lty = 3, lwd = 2)
+
+legend('topleft', 
+       legend = c('Snotel', 'ACIS'),
+       col = c('forestgreen', 'darkseagreen3'),
+       pch = c(16, 17),
+       bty = 'n')
+text(x = 25, y = 0, 'Snotel' ~R^2 ~ '= 0.94', col = 'forestgreen')
+text(x = 25, y = -9, 'ACIS' ~R^2 ~ '= 0.93', col = 'darkseagreen3') 
